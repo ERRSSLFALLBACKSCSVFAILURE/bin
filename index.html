@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-md px-4">
+        
+        <div class="bg-[#0a0a0a] border border-white/5 rounded p-6">
+            
+            <div class="space-y-3">
+                <div>
+                    <textarea id="c" rows="6" class="w-full bg-black/50 border border-white/5 rounded px-4 py-3 text-white/90 text-sm focus:outline-none focus:border-white/20 transition-all resize-none" placeholder=" "></textarea>
+                    <div class="flex justify-end mt-1">
+                        <span id="cnt" class="text-xs text-white/20">0</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <input type="text" id="n" class="w-full bg-black/50 border border-white/5 rounded px-4 py-3 text-white/90 text-sm focus:outline-none focus:border-white/20 transition-all" placeholder="name">
+                </div>
+                
+                <button id="b" class="w-full bg-white/5 hover:bg-white/10 text-white/90 font-medium py-3 px-4 rounded transition-all duration-200 text-sm border border-white/5">
+                    Upload
+                </button>
+            </div>
+            
+            <div id="section" class="mt-4 hidden">
+                <div id="url" onclick="copy()" class="text-sm text-white/60 break-all cursor-pointer hover:text-white/90 transition-colors"></div>
+            </div>
+            
+            <div class="flex justify-between mt-6 text-[0.65rem] text-white/20">
+                <span>bin</span>
+                <span>v1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const a = document.getElementById('c');
+        const b = document.getElementById('n');
+        const d = document.getElementById('b');
+        const e = document.getElementById('cnt');
+        const f = document.getElementById('section');
+        const g = document.getElementById('url');
+        const h = window.location.origin;
+        
+        a.addEventListener('input', () => {
+            e.textContent = a.value.length;
+        });
+        
+        d.addEventListener('click', async () => {
+            const i = {
+                content: a.value,
+                filename: b.value
+            };
+            
+            if (!i.content || i.content.trim() === '') {
+                Swal.fire({
+                    background: '#0a0a0a',
+                    color: '#fff',
+                    confirmButtonColor: '#fff',
+                    text: 'You uploaded blank idiot',
+                    timer: 800,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            
+            d.disabled = true;
+            d.textContent = '...';
+            
+            try {
+                const j = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(i)
+                });
+                
+                const k = await j.json();
+                
+                if (k.z === 'success') {
+                    const l = h + '/raw/' + k.id;
+                    g.textContent = l;
+                    f.classList.remove('hidden');
+                    
+                    Swal.fire({
+                        background: '#0a0a0a',
+                        color: '#fff',
+                        confirmButtonColor: '#fff',
+                        text: 'Done dawg',
+                        timer: 800,
+                        showConfirmButton: false
+                    });
+                    
+                    a.value = '';
+                    b.value = '';
+                    e.textContent = '0';
+                } else {
+                    Swal.fire({
+                        background: '#0a0a0a',
+                        color: '#fff',
+                        confirmButtonColor: '#fff',
+                        html: '<div style="color:#fff">Its having issues rn.</div><div style="color:#888;font-size:12px;margin-top:5px">' + (k.aa || 'unknown') + '</div>',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    background: '#0a0a0a',
+                    color: '#fff',
+                    confirmButtonColor: '#fff',
+                    html: `<div style="color:#fff">Error</div><div style="color:#888;font-size:12px;margin-top:5px">${error.message}</div>`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } finally {
+                d.disabled = false;
+                d.textContent = 'Upload';
+            }
+        });
+        
+        function copy() {
+            const m = g.textContent;
+            navigator.clipboard.writeText(m);
+            Swal.fire({
+                background: '#0a0a0a',
+                color: '#fff',
+                confirmButtonColor: '#fff',
+                text: 'Copied',
+                timer: 600,
+                showConfirmButton: false
+            });
+        }
+    </script>
+</body>
+</html>
